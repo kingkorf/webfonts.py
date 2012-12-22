@@ -10,6 +10,9 @@ class Webfonts:
 
 		self.parselink()
 		self.download()
+		self.generatecss()
+
+		pyperclip.copy(self.stylesheet)
 
 	def parselink(self):
 		try:
@@ -26,10 +29,10 @@ class Webfonts:
 			print(e)
 			sys.exit(0)
 
-		self.ret = res.read()
+		ret = res.read()
 
-		names = re.findall(r"local\('([^\)]+)'\), url", self.ret.decode('utf8'))
-		self.urls = re.findall(r"url\(([^\)]+)\)", self.ret.decode('utf8'))
+		names = re.findall(r"local\('([^\)]+)'\), url", ret.decode('utf8'))
+		self.urls = re.findall(r"url\(([^\)]+)\)", ret.decode('utf8'))
 
 		self.result = {}
 		i = 0
@@ -37,21 +40,16 @@ class Webfonts:
 			self.result[n] = self.urls[i]
 			i += 1
 
-		self.generatecss()
+		self.stylesheet = ret.decode('utf8')
 
 	def generatecss(self):
-		stylesheet = self.ret.decode('utf8')
 		for i in self.result.items():
 			filename = i[0] + ".woff"
 			directory = i[1].split('/')[-3]
-			stylesheet = stylesheet.replace(i[1], os.path.join(self.dir, directory, filename))
+			self.stylesheet = self.stylesheet.replace(i[1], os.path.join(self.dir, directory, filename))
 
 		with open(self.css, 'a') as file_out:
-			file_out.write(stylesheet)
-
-		pyperclip.copy(stylesheet)
-
-		print('Stylesheet written and copied to clipboard...')
+			file_out.write(self.stylesheet)
 
 	def download(self):
 		if not os.path.exists(self.dir):
@@ -70,9 +68,6 @@ class Webfonts:
 			with urllib.request.urlopen(i[1]) as response, open(os.path.join(target, filename), 'wb') as out_file:
 				shutil.copyfileobj(response, out_file)
 
-			print('Downloaded: ' + filename)
-
-		print('Done!')
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Download Google Web Fonts')
