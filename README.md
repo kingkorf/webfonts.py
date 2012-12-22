@@ -1,4 +1,4 @@
-Webfont.py
+Webfonts.py
 ===
 
-A small tool to easily download fonts from Google Web-fonts
+A small tool to easily download fonts from Google Web Fonts
